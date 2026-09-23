@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trade, Belief & Connection Lab</title>
+<style>
+:root{
+ --gold:#C9A23F;--black:#111;--muted:#666;--line:#d8d8d8;--panel:#f7f7f5;
+ --land:#8b6f47;--sea:#527ba8;--desert:#b18a43;--good:#2f6f4e;--warn:#996515;
+}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--black);background:#fff;line-height:1.45}
+.wrap{max-width:1220px;margin:auto;padding:20px}
+header{border:3px solid #000;border-top:9px solid var(--gold);padding:18px;margin-bottom:16px}
+h1{margin:.15rem 0}.eyebrow{font-size:.75rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.card{border:2px solid var(--line);padding:15px;background:#fff;margin-bottom:15px}.goldline{border-top:7px solid var(--gold)}
+.grid{display:grid;grid-template-columns:310px 1fr;gap:16px}@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}@media(max-width:720px){.two,.three{grid-template-columns:1fr}}
+.row{padding:8px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}.rowtop{display:flex;justify-content:space-between;gap:8px}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:.76rem;font-weight:700}
+.small{font-size:.88rem;color:var(--muted)}.hidden{display:none!important}
+button{font:inherit;min-height:42px;padding:9px 13px;font-weight:800;cursor:pointer;border:0}.primary{background:#000;color:#fff}.secondary{background:#fff;border:2px solid #000}
+.selectBtn,.goalBtn,.beliefBtn,.tradeBtn,.predictBtn{width:100%;text-align:left;background:#fff;border:2px solid var(--line);padding:11px;margin:5px 0}
+.selectBtn.selected,.goalBtn.selected,.beliefBtn.selected,.tradeBtn.selected,.predictBtn.selected{border-color:var(--gold);background:#fff9e9}
+.callout{padding:12px;background:var(--panel);border-left:6px solid var(--gold);margin:10px 0}
+.score{margin:8px 0}.scorebar{height:9px;background:#eee}.scorebar span{display:block;height:9px;background:var(--gold)}
+.mapwrap{border:2px solid #000;background:#faf9f4;padding:8px;overflow:auto}
+svg{width:100%;min-width:720px;height:440px}.node circle{fill:#fff;stroke:#111;stroke-width:3}.node text{font-size:13px;font-weight:700;text-anchor:middle}.node.home circle{fill:#fff3c4;stroke:var(--gold);stroke-width:5}.node.connected circle{fill:#eef7ed}.node.available{cursor:pointer}.node.available circle{stroke:var(--gold);stroke-dasharray:6 4}
+.route{stroke:#bbb;stroke-width:4;opacity:.45}.route.established{stroke:#111;opacity:.9;stroke-width:6}.route.land.established{stroke:var(--land)}.route.sea.established{stroke:var(--sea)}.route.desert.established{stroke:var(--desert)}
+.legend span{margin-right:14px}.dot{display:inline-block;width:13px;height:13px;margin-right:4px;vertical-align:-1px}
+.market{border:1px solid var(--line);padding:9px;margin:6px 0}.high{color:var(--good);font-weight:800}.low{color:#8a3434;font-weight:800}
+.evidence{border:3px solid var(--gold);padding:15px;background:#fff}.evidence img{width:100%;max-height:330px;object-fit:cover;border:2px solid #000}
+.modalBack{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:18px;z-index:10}
+.modal{max-width:800px;max-height:92vh;overflow:auto;background:#fff;padding:20px;border-top:9px solid var(--gold)}
+table{width:100%;border-collapse:collapse;font-size:.91rem}th,td{border:1px solid var(--line);padding:8px;vertical-align:top;text-align:left}th{background:var(--panel)}
+textarea{width:100%;min-height:72px;font:inherit;padding:9px}.stage{font-size:1.05rem;font-weight:800;color:#725700}
+.bigScore{font-size:1.55rem;font-weight:900}.mission{font-size:.9rem;padding:7px;background:#000;color:#fff}.vocabItem{padding:8px 0;border-bottom:1px solid var(--line)}.vocabItem:last-child{border-bottom:0}.vocabWord{font-weight:800;color:#725700}.imageFallback{padding:18px;background:var(--panel);border:2px dashed var(--gold);font-size:.9rem;color:var(--muted)}
+@media print{.noPrint,#setup,#playControls,#evidenceModal,aside{display:none!important}.grid{display:block}.card{break-inside:avoid}.wrap{max-width:none;padding:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div class="eyebrow">1.12 + 1.13 • Reading the World</div>
+ <h1>Trade, Belief & Connection Lab</h1>
+ <p style="margin-bottom:0"><strong>Goods create connections. Connections move people and ideas. People and ideas change cultures.</strong></p>
+</header>
+
+<section id="setup" class="card goldline">
+ <div class="eyebrow">Build Your Starting Society</div>
+ <h2>Choose your mission and starting belief tradition</h2><p class="small"><strong>Vocabulary support:</strong> Key trade and belief words are defined in the sidebar during play.</p>
+ <div class="two">
+  <div>
+   <h3>1. Mission</h3>
+   <button class="goalBtn" data-goal="wealth"><strong>Merchant Power</strong><div class="small">Build the greatest trade wealth.</div></button>
+   <button class="goalBtn" data-goal="belief"><strong>Belief Network</strong><div class="small">Spread your starting belief across regions.</div></button>
+   <button class="goalBtn" data-goal="both"><strong>Connected Civilization</strong><div class="small">Build wealth and spread belief while keeping the city stable.</div></button>
+  </div>
+  <div>
+   <h3>2. Starting tradition</h3>
+   <div id="beliefChoices"></div>
+  </div>
+ </div>
+ <div id="startPreview" class="callout hidden"></div>
+ <button id="startBtn" class="primary" disabled>Begin the Network</button>
+</section>
+
+<div id="game" class="grid hidden">
+<aside>
+ <section class="card goldline">
+  <div class="eyebrow">Mission</div><div id="missionLabel" class="mission"></div>
+  <div class="row"><strong>Home Region</strong><div id="homeLabel"></div></div>
+  <div class="row"><strong>Starting Belief</strong><div id="beliefLabel"></div></div>
+  <div class="row"><strong>Phase</strong><div id="phaseLabel" class="stage"></div></div>
+ </section>
+ <section class="card">
+  <div class="eyebrow">Visible Scores</div>
+  <div id="scores"></div>
+ </section>
+ <section class="card">
+  <div class="eyebrow">Belief Landscape</div>
+  <div id="beliefLandscape"></div>
+ </section>
+ <section class="card">
+  <div class="eyebrow">Key Words</div>
+  <div class="vocabItem"><span class="vocabWord">Merchant</span><div class="small">A person who buys and sells goods.</div></div>
+  <div class="vocabItem"><span class="vocabWord">Caravanserai</span><div class="small">A stopping place where caravans could find shelter, water, food, storage, and safety.</div></div>
+  <div class="vocabItem"><span class="vocabWord">Credit</span><div class="small">Receiving money or goods now with a promise to pay later.</div></div>
+  <div class="vocabItem"><span class="vocabWord">Diffusion</span><div class="small">The spread of an idea, belief, technology, or cultural trait from one place to another.</div></div>
+  <div class="vocabItem"><span class="vocabWord">Adaptation</span><div class="small">Changing an idea or practice so it fits a new place or culture.</div></div>
+  <div class="vocabItem"><span class="vocabWord">Transculturation</span><div class="small">Long-term cultural interaction that creates new or blended cultural forms.</div></div>
+  <div class="vocabItem"><span class="vocabWord">Diaspora</span><div class="small">A community of people living away from their ancestral homeland while keeping connections to a shared identity or tradition.</div></div>
+  <div class="vocabItem"><span class="vocabWord">Institution</span><div class="small">An organized part of society, such as a monastery, mosque, church, school, government office, or market.</div></div>
+ </section>
+</aside>
+
+<main>
+ <section class="card goldline">
+  <div class="rowtop">
+   <div><div class="eyebrow">Round <span id="roundNum"></span> of 6</div><h2 id="roundTitle"></h2></div>
+   <span id="phasePill" class="pill"></span>
+  </div>
+  <p id="roundText"></p>
+ </section>
+
+ <section class="card">
+  <div class="eyebrow">Schematic Afro-Eurasian Network Map</div>
+  <p class="small">Not to scale. Click a highlighted region to select a trade connection.</p>
+  <div class="mapwrap">
+   <svg id="map" viewBox="0 0 1000 440" aria-label="Schematic trade network map"></svg>
+  </div>
+  <div class="legend small" style="margin-top:8px">
+   <span><i class="dot" style="background:#8b6f47"></i>Land</span>
+   <span><i class="dot" style="background:#527ba8"></i>Sea</span>
+   <span><i class="dot" style="background:#b18a43"></i>Desert</span>
+  </div>
+ </section>
+
+ <section id="playControls" class="card">
+  <div class="eyebrow">Plan This Round</div>
+  <div class="two">
+   <div>
+    <h3>1. Choose a destination</h3>
+    <div id="destinationBox" class="callout">Select a highlighted region on the map.</div>
+    <div id="marketBox"></div>
+   </div>
+   <div>
+    <h3>2. Choose how to support the connection</h3>
+    <div id="supportChoices"></div>
+   </div>
+  </div>
+  <hr>
+  <h3>3. Predict TWO effects</h3>
+  <div id="predictionChoices" class="three"></div>
+  <label><strong>Why?</strong></label>
+  <textarea id="whyBox" placeholder="I think this will happen because..."></textarea>
+  <p id="warning" class="small"></p>
+  <button id="runBtn" class="primary">Run this era</button>
+ </section>
+
+ <section id="resultCard" class="card hidden">
+  <div class="eyebrow">What I Thought vs. What Happened</div>
+  <div id="resultBody"></div>
+  <div id="scoreChanges"></div>
+  <div class="callout"><strong>Connection created:</strong> <span id="connectionResult"></span></div>
+  <button id="nextBtn" class="primary">Continue</button>
+ </section>
+
+ <section id="checkpoint" class="card hidden">
+  <div class="eyebrow">1.12 Checkpoint</div>
+  <h2>Trade changed more than wealth.</h2>
+  <p>Your first three rounds focused on the 1.12 pattern: <strong>DESIRE → CONNECTION → EXCHANGE → CHANGE.</strong></p>
+  <div id="checkpointBody"></div>
+  <div class="callout"><strong>Next:</strong> In 1.13, continue the same society. Trade routes now become pathways for beliefs, institutions, art, language, and cultural adaptation.</div>
+  <button id="continueBeliefs" class="primary">Continue to 1.13 Belief Phase</button>
+  <button id="checkpointPrint" class="secondary">Print 1.12 Checkpoint</button>
+ </section>
+
+ <section id="finalSummary" class="card goldline hidden">
+  <div class="eyebrow">Final Essay Organizer</div>
+  <h2>How did economic opportunity lead to cultural change?</h2>
+  <p class="small">Use the chain below to turn your game into an explanation.</p>
+  <div id="finalScores"></div>
+
+  <div style="background:#000;color:#fff;padding:16px;text-align:center;margin:16px 0;font-size:18px;">
+   <strong style="color:#C9A23F">ECONOMIC OPPORTUNITY</strong>
+   &nbsp;→&nbsp; CONNECTION
+   &nbsp;→&nbsp; PEOPLE + IDEAS MOVE
+   &nbsp;→&nbsp; CULTURES INTERACT
+   &nbsp;→&nbsp; CULTURE CHANGES
+  </div>
+
+  <div style="overflow:auto">
+   <table>
+    <thead><tr><th style="width:19%">Step</th><th>What happened in my simulation?</th><th style="width:30%">What this helps me explain</th></tr></thead>
+    <tbody id="causeChainTable"></tbody>
+   </table>
+  </div>
+
+  <h3 style="margin-top:18px">Historical Evidence I Can Use</h3>
+  <div id="evidenceList"></div>
+
+  <div class="callout"><strong>Essay Question:</strong> How can economic connections lead to religious and cultural change?</div>
+
+  <div class="callout">
+   <strong>Sentence frame:</strong><br>
+   Trade created economic opportunity because ____________________. This increased connection between ____________________ and ____________________. As merchants, travelers, migrants, and religious communities moved, ____________________ interacted with ____________________. This led to ____________________, showing that economic connection can cause cultural change.
+  </div>
+
+  <div class="callout"><strong>Possible claim:</strong> Long-distance trade created economic opportunities that brought more people into contact. As merchants and travelers moved along trade routes, beliefs entered new cultural settings where they could spread, coexist, and adapt.</div>
+
+  <div class="noPrint">
+   <button id="printBtn" class="primary">Print / Save as PDF</button>
+   <button id="exportBtn" class="secondary">Export Essay Organizer (.txt)</button>
+   <button id="restartBtn" class="secondary">New Game</button>
+  </div>
+ </section>
+</main>
+</div>
+</div>
+
+<div id="evidenceModal" class="modalBack hidden">
+ <div class="modal">
+  <div class="eyebrow">Historical Evidence Unlocked</div>
+  <h2 id="evTitle"></h2>
+  <div id="evImage"></div>
+  <p id="evBody"></p>
+  <div id="evQuote" class="callout hidden"></div>
+  <p id="evQuestion" class="callout"></p>
+  <button id="closeEvidence" class="primary">Add to My Evidence & Continue</button>
+ </div>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id),clamp=n=>Math.max(0,Math.min(100,n));
+const beliefDefs={
+ "Hindu Traditions":{home:"India",note:"duty, karma, ritual life, family and moral action"},
+ "Buddhism":{home:"India",note:"suffering, compassion, monastic life, adaptation across cultures"},
+ "Confucianism":{home:"China",note:"order, duty, family, education, government"},
+ "Daoism":{home:"China",note:"balance, nature, simplicity, ideas about leadership"},
+ "Judaism":{home:"Southwest Asia",note:"law, ethics, community identity across time and place"},
+ "Christianity":{home:"Mediterranean",note:"community, mission, institutions, love and forgiveness"},
+ "Islam":{home:"Arabia",note:"community, practice, law, architecture and trade connections"}
+};
+const regions={
+ China:{x:860,y:130,goods:["silk","porcelain","paper"],beliefs:["Confucianism","Daoism","Buddhism"]},
+ "Central Asia":{x:670,y:150,goods:["horses"],beliefs:["Buddhism"]},
+ India:{x:690,y:300,goods:["spices","cotton textiles"],beliefs:["Hindu Traditions","Buddhism"]},
+ "Southeast Asia":{x:875,y:335,goods:["spices","forest products"],beliefs:["Buddhism","Hindu Traditions","Islam"]},
+ "Southwest Asia":{x:485,y:205,goods:["glassware","textiles"],beliefs:["Judaism","Christianity","Islam"]},
+ Arabia:{x:505,y:300,goods:["incense","spices"],beliefs:["Islam"]},
+ Mediterranean:{x:300,y:145,goods:["glassware","wine","olive oil"],beliefs:["Christianity","Judaism"]},
+ "East Africa":{x:435,y:385,goods:["ivory","gold"],beliefs:["Islam","Christianity"]},
+ "West Africa":{x:160,y:320,goods:["gold","salt"],beliefs:["Islam"]}
+};
+const routes=[
+ ["China","Central Asia","land"],["Central Asia","Southwest Asia","land"],["Central Asia","India","land"],
+ ["Southwest Asia","Mediterranean","land"],["Southwest Asia","India","sea"],["Southwest Asia","Arabia","land"],
+ ["Arabia","India","sea"],["Arabia","East Africa","sea"],["India","East Africa","sea"],["India","Southeast Asia","sea"],
+ ["Southeast Asia","China","sea"],["Mediterranean","West Africa","desert"],["West Africa","Southwest Asia","desert"],
+ ["Mediterranean","Arabia","sea"]
+];
+const supportDefs={
+ caravanserai:{label:"Build caravanserai",types:["land","desert"],wealth:7,reach:6,stability:3,belief:4,adapt:3,disease:1,desc:"Shelter, storage, animal care, security and information make land routes more usable."},
+ port:{label:"Expand a port and warehouses",types:["sea"],wealth:9,reach:8,stability:2,belief:5,adapt:4,disease:3,desc:"Ports handle ships, storage, repair, markets and merchant communities."},
+ guards:{label:"Protect merchants and routes",types:["land","sea","desert"],wealth:6,reach:4,stability:5,belief:2,adapt:1,disease:1,desc:"Security lowers risk but requires state resources."},
+ credit:{label:"Use credit and exchange documents",types:["land","sea","desert"],wealth:10,reach:7,stability:1,belief:3,adapt:2,disease:1,desc:"Trust and finance reduce the need to carry heavy currency."},
+ lowtax:{label:"Lower merchant taxes",types:["land","sea","desert"],wealth:8,reach:7,stability:-2,belief:4,adapt:3,disease:2,desc:"More merchants enter, but government collects less from each transaction."},
+ restrict:{label:"Restrict foreign merchants",types:["land","sea","desert"],wealth:-7,reach:-6,stability:4,belief:-5,adapt:-5,disease:-3,desc:"Contact falls. So do commercial opportunities and cultural exchange."},
+ translate:{label:"Support translators and visiting scholars",types:["land","sea","desert"],wealth:3,reach:3,stability:2,belief:9,adapt:10,disease:1,desc:"Communication makes ideas easier to understand and reinterpret."},
+ tolerate:{label:"Allow foreign religious communities",types:["land","sea","desert"],wealth:4,reach:4,stability:3,belief:8,adapt:8,disease:1,desc:"Merchants and travelers can build durable communities and institutions."}
+};
+const evidenceCards=[
+ {id:"swahili",trigger:(g,d)=>d==="East Africa"&&g.scores.adapt>=40,title:"Swahili Coast: Trade Creates a New Cultural Pattern",
+  img:"https://upload.wikimedia.org/wikipedia/commons/d/dc/GreatMosque.jpg",
+  body:"East African coastal societies remained rooted in African Bantu-speaking communities while centuries of Indian Ocean contact brought merchants, Islam, Arabic vocabulary, imported goods, and new architectural influences.",
+  q:"What in this example looks local, and what shows long-distance connection?"},
+ {id:"xian",trigger:(g,d)=>d==="China"&&g.contactBeliefs.has("Islam"),title:"Great Mosque of Xi'an: Islam in a Chinese Setting",
+  img:"https://upload.wikimedia.org/wikipedia/commons/c/c0/Xi%27anGreatMosque.jpg",
+  body:"The Great Mosque of Xi'an is an Islamic religious site expressed through a strongly Chinese architectural setting. It is useful evidence that a belief can spread without producing identical cultural expression everywhere.",
+  q:"What does this building suggest about the difference between diffusion and transculturation?"},
+ {id:"timbuktu",trigger:(g,d)=>d==="West Africa"&&g.contactBeliefs.has("Islam"),title:"Timbuktu: Islam and West African Expression",
+  img:"https://upload.wikimedia.org/wikipedia/commons/8/8f/2007_Sankore_Mosque_Timbuktu_01.jpg",
+  body:"Islamic religion and scholarship became important in West African cities while architecture developed through regional Sudano-Sahelian building traditions.",
+  q:"How can a religion become part of a region without erasing local expression?"},
+ {id:"buddhaChina",trigger:(g,d)=>d==="China"&&g.contactBeliefs.has("Buddhism"),title:"Buddhism Reaches China: An Idea Is Reinterpreted",
+  body:"Buddhism entered a society already shaped by Confucian and Daoist traditions. Chinese thinkers debated how a foreign belief system fit their existing cultural world.",
+  quote:"Some Daoist traditions even told stories connecting Laozi's journey west with India and the Buddha.",
+  q:"Why might people explain a new belief using ideas they already understand?"},
+ {id:"neo",trigger:(g,d)=>d==="China"&&g.scores.adapt>=65&&g.contactBeliefs.has("Buddhism")&&g.startBelief==="Confucianism",title:"New Development: Neo-Confucianism",
+  body:"Later Chinese thinkers revived Confucian traditions while responding to centuries of Buddhist and Daoist influence. The result was not simply one tradition replacing another.",
+  q:"How does this show that contact can change the receiving culture as well as the traveling belief?"},
+ {id:"samarkand",trigger:(g,d)=>d==="Central Asia"&&g.scores.wealth>=45,title:"Samarkand: A City Built by Connection",
+  body:"At a major Central Asian crossroads, merchants, craftspeople, translators, religious travelers, officials, migrants and scholars could meet. Trade-city growth changed both economy and society.",
+  quote:"Xuanzang described precious merchandise from many foreign countries being stored there.",
+  q:"If goods from many regions collect in one city, what else is likely to collect there?"},
+ {id:"religionPeople",trigger:(g,d)=>g.round>=4&&g.scores.belief>=35,title:"Who Actually Carries Beliefs?",
+  body:"Ideas travel through people: merchants, monks, pilgrims, missionaries, scholars, families, diaspora communities (people living away from an ancestral homeland while keeping a shared identity) and rulers. Trade routes make repeated contact possible.",
+  q:"Which people in your network are most likely carrying your starting belief into new regions?"}
+];
+const baseDemand={silk:1.4,porcelain:1.3,paper:1.15,spices:1.45,"cotton textiles":1.25,horses:1.25,glassware:1.2,wine:1.05,"olive oil":1.05,incense:1.25,ivory:1.3,gold:1.5,salt:1.0,textiles:1.15,"forest products":1.15};
+
+let game=null,selectedGoal=null,selectedBelief=null,selectedDest=null,selectedSupport=null,selectedPred=[];
+
+function initBeliefs(){
+ $('beliefChoices').innerHTML=Object.keys(beliefDefs).map(b=>`<button class="beliefBtn" data-belief="${b}"><strong>${b}</strong><div class="small">Home: ${beliefDefs[b].home} • ${beliefDefs[b].note}</div></button>`).join("");
+ document.querySelectorAll(".beliefBtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".beliefBtn").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");selectedBelief=b.dataset.belief;previewStart()});
+ document.querySelectorAll(".goalBtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".goalBtn").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");selectedGoal=b.dataset.goal;previewStart()});
+}
+function previewStart(){
+ if(!selectedGoal||!selectedBelief)return;
+ $('startPreview').classList.remove('hidden');
+ $('startPreview').innerHTML=`<strong>${selectedBelief}</strong> begins in <strong>${beliefDefs[selectedBelief].home}</strong>. Your mission is <strong>${goalName(selectedGoal)}</strong>. You will play 3 trade-focused rounds for 1.12, then continue for 3 belief-focused rounds for 1.13.`;
+ $('startBtn').disabled=false;
+}
+function goalName(g){return g==="wealth"?"Merchant Power":g==="belief"?"Belief Network":"Connected Civilization"}
+function start(){
+ const home=beliefDefs[selectedBelief].home;
+ game={round:1,goal:selectedGoal,startBelief:selectedBelief,home,connected:new Set([home]),established:[],contactBeliefs:new Set([selectedBelief]),institutions:new Set(),evidence:[],history:[],
+ scores:{wealth:25,reach:18,pop:30,belief:22,diversity:12,adapt:12,stability:65},hidden:{disease:18,merchant:15,revenue:20}};
+ $('setup').classList.add('hidden');$('game').classList.remove('hidden');render();
+ save();
+}
+function render(){
+ $('missionLabel').textContent=goalName(game.goal);$('homeLabel').textContent=game.home;$('beliefLabel').textContent=game.startBelief;
+ const phase=game.round<=3?"1.12 TRADE PHASE":"1.13 BELIEF PHASE";$('phaseLabel').textContent=phase;$('phasePill').textContent=phase;$('roundNum').textContent=game.round;
+ $('roundTitle').textContent=game.round<=3?"Build the Trade Network":"Ideas Are Moving Through Your Network";
+ $('roundText').textContent=game.round<=3?"Choose a new connection. Your goal is to gain wealth, but every connection also moves people, beliefs and risks.":"The routes you built for goods are now durable pathways for beliefs and communities. Trade still matters, but adaptation and institutions matter more.";
+ renderScores();renderBeliefs();renderMap();resetRoundUI();
+}
+function renderScores(){
+ const s=game.scores,arr=[["Wealth",s.wealth],["Trade Reach",s.reach],["Population / City Growth",s.pop],["Belief Reach",s.belief],["Religious Diversity",s.diversity],["Cultural Adaptation",s.adapt],["Stability",s.stability]];
+ $('scores').innerHTML=arr.map(([n,v])=>`<div class="score"><div class="rowtop"><span>${n}</span><strong>${Math.round(v)}</strong></div><div class="scorebar"><span style="width:${v}%"></span></div></div>`).join("");
+}
+function renderBeliefs(){
+ const others=[...game.contactBeliefs].filter(x=>x!==game.startBelief);
+ $('beliefLandscape').innerHTML=`<div class="row"><strong>Starting tradition</strong><br>${game.startBelief}</div>
+ <div class="row"><strong>Belief reach</strong><br>${level(game.scores.belief)}</div>
+ <div class="row"><strong>Other traditions encountered</strong><br>${others.length?others.join(", "):"None yet"}</div>
+ <div class="row"><strong>Cultural adaptation</strong><br>${level(game.scores.adapt)}</div>
+ <div class="row"><strong>Institutions / developments</strong><br>${[...game.institutions].join(", ")||"None yet"}</div>`;
+}
+function level(v){return v>=75?"Very High":v>=55?"High":v>=35?"Moderate":"Limited"}
+function key(a,b){return [a,b].sort().join("|")}
+function routeObj(a,b){return routes.find(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a))}
+function availableDestinations(){
+ const out=new Set();
+ for(const c of game.connected){
+  for(const r of routes){
+   if(r[0]===c&&!game.connected.has(r[1]))out.add(r[1]);
+   if(r[1]===c&&!game.connected.has(r[0]))out.add(r[0]);
+  }
+ }
+ if(out.size===0){
+  Object.keys(regions).filter(x=>!game.connected.has(x)).forEach(x=>out.add(x));
+ }
+ return out;
+}
+function renderMap(){
+ const svg=$('map');let content="";
+ routes.forEach(([a,b,t])=>{const A=regions[a],B=regions[b],est=game.established.some(e=>key(e.a,e.b)===key(a,b));content+=`<line class="route ${t} ${est?'established':''}" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/>`});
+ const avail=availableDestinations();
+ Object.entries(regions).forEach(([name,r])=>{
+  const cls=["node",name===game.home?"home":"",game.connected.has(name)?"connected":"",avail.has(name)?"available":""].join(" ");
+  content+=`<g class="${cls}" data-node="${name}" transform="translate(${r.x},${r.y})"><circle r="34"></circle><text y="4">${shortName(name)}</text></g>`;
+ });
+ svg.innerHTML=content;
+ svg.querySelectorAll(".node.available").forEach(n=>n.onclick=()=>selectDestination(n.dataset.node));
+}
+function shortName(n){return n==="Southwest Asia"?"SW Asia":n==="Southeast Asia"?"SE Asia":n}
+function selectDestination(d){
+ selectedDest=d;selectedSupport=null;selectedPred=[];document.querySelectorAll(".node").forEach(n=>n.classList.remove("chosen"));
+ const source=findSourceFor(d),r=routeObj(source,d),type=r?r[2]:"land";
+ $('destinationBox').innerHTML=`<strong>${d}</strong><br>Connection from ${source} by <strong>${type}</strong> route.`;
+ renderMarket(d);renderSupports(type);renderPredictions(); 
+}
+function findSourceFor(d){
+ for(const c of game.connected)if(routeObj(c,d))return c;
+ return game.home;
+}
+function marketMultiplier(good,d){
+ const local=regions[d].goods.includes(good)?0.65:1;
+ const seed=(good.length*7+d.length*3+game.round*11)%9;
+ return Math.max(.55,(baseDemand[good]||1.1)*local*(.82+seed*.055));
+}
+function renderMarket(d){
+ const goods=[...new Set([...regions[game.home].goods,...game.established.flatMap(e=>regions[e.b]?.goods||[])])];
+ const vals=goods.map(g=>[g,marketMultiplier(g,d)]).sort((a,b)=>b[1]-a[1]).slice(0,4);
+ $('marketBox').innerHTML=`<h4>Current demand in ${d}</h4>`+vals.map(([g,m])=>`<div class="market"><strong>${g}</strong> <span class="${m>=1.25?'high':m<.9?'low':''}">${m>=1.35?'HIGH':m>=1.05?'MODERATE':'LOW'} demand</span><div class="small">Estimated trade value ×${m.toFixed(2)}</div></div>`).join("");
+}
+function renderSupports(type){
+ const phaseBelief=game.round>=4;
+ const items=Object.entries(supportDefs).filter(([id,s])=>s.types.includes(type)&&(phaseBelief||!["translate","tolerate"].includes(id)));
+ $('supportChoices').innerHTML=items.map(([id,s])=>`<button class="tradeBtn" data-id="${id}"><strong>${s.label}</strong><div class="small">${s.desc}</div></button>`).join("");
+ document.querySelectorAll(".tradeBtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tradeBtn").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");selectedSupport=b.dataset.id});
+}
+const predDefs=[
+ ["wealth","Wealth increases"],["reach","Trade reach increases"],["belief","Starting belief spreads"],["diversity","Religious diversity increases"],
+ ["adapt","Cultural adaptation increases"],["pop","City population grows"],["stability","Stability improves"],["disease","Disease exposure increases"]
+];
+function renderPredictions(){
+ $('predictionChoices').innerHTML=predDefs.map(([k,l])=>`<button class="predictBtn" data-id="${k}">${l}</button>`).join("");
+ document.querySelectorAll(".predictBtn").forEach(b=>b.onclick=()=>{const k=b.dataset.id,i=selectedPred.indexOf(k);if(i>=0){selectedPred.splice(i,1);b.classList.remove("selected")}else if(selectedPred.length<2){selectedPred.push(k);b.classList.add("selected")}else{$('warning').textContent="Choose only two.";return}$('warning').textContent=selectedPred.length===2?"Two selected.":""});
+}
+function resetRoundUI(){selectedDest=null;selectedSupport=null;selectedPred=[];$('destinationBox').textContent="Select a highlighted region on the map.";$('marketBox').innerHTML="";$('supportChoices').innerHTML="";$('predictionChoices').innerHTML="";$('whyBox').value="";$('warning').textContent="";$('resultCard').classList.add("hidden")}
+function runRound(){
+ if(!selectedDest||!selectedSupport||selectedPred.length!==2){$('warning').textContent="Choose a destination, a support strategy, and exactly two predictions.";return}
+ const source=findSourceFor(selectedDest),r=routeObj(source,selectedDest),type=r?r[2]:"land",sup=supportDefs[selectedSupport],before={...game.scores};
+ const bestGood=[...new Set([...regions[game.home].goods,...regions[source].goods])].map(g=>[g,marketMultiplier(g,selectedDest)]).sort((a,b)=>b[1]-a[1])[0];
+ const demand=bestGood[1],profit=Math.round((6+sup.wealth)*(demand));
+ game.scores.wealth=clamp(game.scores.wealth+profit);
+ game.scores.reach=clamp(game.scores.reach+sup.reach+7);
+ game.scores.pop=clamp(game.scores.pop+Math.max(1,Math.round(profit*.35)));
+ game.scores.belief=clamp(game.scores.belief+sup.belief+(game.round>=4?6:2));
+ game.scores.diversity=clamp(game.scores.diversity+5+(game.round>=4?5:2));
+ game.scores.adapt=clamp(game.scores.adapt+sup.adapt+(game.round>=4?5:1));
+ game.scores.stability=clamp(game.scores.stability+sup.stability);
+ game.hidden.disease=clamp(game.hidden.disease+sup.disease+Math.max(0,Math.round(game.scores.reach/30)));
+ game.hidden.merchant=clamp(game.hidden.merchant+Math.max(2,Math.round(profit/5)));
+ game.connected.add(selectedDest);game.established.push({a:source,b:selectedDest,type});
+ regions[selectedDest].beliefs.forEach(b=>game.contactBeliefs.add(b));
+ if(selectedSupport==="translate")game.institutions.add("translation center");
+ if(selectedSupport==="tolerate")game.institutions.add("foreign religious community");
+ if(selectedSupport==="caravanserai")game.institutions.add("caravanserai");
+ if(selectedSupport==="port")game.institutions.add("expanded port");
+ if(game.scores.belief>55)game.institutions.add(game.startBelief+" institution");
+ if(game.hidden.disease>58){game.scores.pop=clamp(game.scores.pop-7);game.scores.stability=clamp(game.scores.stability-5)}
+ const actual={
+  wealth:game.scores.wealth-before.wealth>5,reach:game.scores.reach-before.reach>5,belief:game.scores.belief-before.belief>5,
+  diversity:game.scores.diversity-before.diversity>5,adapt:game.scores.adapt-before.adapt>5,pop:game.scores.pop-before.pop>4,
+  stability:game.scores.stability-before.stability>2,disease:game.hidden.disease>35
+ };
+ const correct=selectedPred.filter(p=>actual[p]),wrong=selectedPred.filter(p=>!actual[p]);
+ const h={round:game.round,source,dest:selectedDest,type,good:bestGood[0],support:sup.label,pred:[...selectedPred],why:$('whyBox').value.trim(),correct,wrong,before,after:{...game.scores},evidence:null};
+ game.history.push(h);
+ $('resultBody').innerHTML=`<p><strong>You traded ${bestGood[0]} toward ${selectedDest}</strong> using ${sup.label.toLowerCase()}.</p>
+ <p><strong>Your predictions:</strong> ${selectedPred.map(labelPred).join(" + ")}</p>
+ ${h.why?`<div class="callout"><strong>Your reasoning:</strong> ${esc(h.why)}</div>`:""}
+ <div class="two"><div><strong>Matched strongly</strong>${correct.length?correct.map(x=>`<div class="row" style="color:#2f6f4e">${labelPred(x)}</div>`).join(""):'<div class="small">Neither selected effect was among the strongest outcomes.</div>'}</div>
+ <div><strong>Did not match as strongly</strong>${wrong.length?wrong.map(x=>`<div class="row" style="color:#996515">${labelPred(x)}</div>`).join(""):'<div class="small">Both predictions matched strongly.</div>'}</div></div>`;
+ renderScoreChanges(before);
+ $('connectionResult').textContent=`${source} → ${selectedDest}. Goods moved, and contact with ${regions[selectedDest].beliefs.join(", ")} became possible.`;
+ renderScores();renderBeliefs();renderMap();$('resultCard').classList.remove("hidden");$('playControls').classList.add("hidden");
+ const card=findEvidence(selectedDest);if(card){h.evidence=card.title;setTimeout(()=>showEvidence(card),350)}
+ save();
+}
+function labelPred(k){return Object.fromEntries(predDefs)[k]}
+function renderScoreChanges(b){
+ const s=game.scores,arr=[["Wealth",b.wealth,s.wealth],["Trade Reach",b.reach,s.reach],["Population",b.pop,s.pop],["Belief Reach",b.belief,s.belief],["Diversity",b.diversity,s.diversity],["Adaptation",b.adapt,s.adapt],["Stability",b.stability,s.stability]];
+ $('scoreChanges').innerHTML=`<h3>What changed?</h3>`+arr.filter(x=>x[1]!==x[2]).map(x=>`<div class="row"><div class="rowtop"><span>${x[0]}</span><strong>${Math.round(x[1])} → ${Math.round(x[2])}</strong></div></div>`).join("");
+}
+function findEvidence(dest){
+ return evidenceCards.find(c=>!game.evidence.includes(c.id)&&c.trigger(game,dest));
+}
+function showEvidence(c){
+ game.evidence.push(c.id);$('evTitle').textContent=c.title;$('evBody').textContent=c.body;$('evQuestion').innerHTML="<strong>Read the evidence:</strong> "+c.q;
+ $('evImage').innerHTML=c.img?`<img src="${c.img}" alt="${c.title}" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='block';"><div class="imageFallback" style="display:none"><strong>Image could not load.</strong><br>The evidence text below still explains the historical example.</div>`:"";$('evQuote').classList.toggle("hidden",!c.quote);$('evQuote').innerHTML=c.quote?`<strong>Source / tradition:</strong> ${c.quote}`:"";
+ $('evidenceModal').classList.remove("hidden");save();
+}
+function closeEvidence(){$('evidenceModal').classList.add("hidden")}
+function nextRound(){
+ if(game.round===3){buildCheckpoint();$('checkpoint').classList.remove("hidden");$('resultCard').classList.add("hidden");return}
+ if(game.round>=6){buildFinal();$('resultCard').classList.add("hidden");return}
+ game.round++;$('playControls').classList.remove("hidden");render();window.scrollTo({top:0,behavior:"smooth"});save();
+}
+function buildCheckpoint(){
+ const first=game.history.slice(0,3);
+ $('checkpointBody').innerHTML=`<div class="two"><div><strong>Wealth:</strong> ${Math.round(game.scores.wealth)}<br><strong>Trade Reach:</strong> ${Math.round(game.scores.reach)}<br><strong>Population Growth:</strong> ${Math.round(game.scores.pop)}</div>
+ <div><strong>Belief Reach already changed:</strong> ${Math.round(game.scores.belief)}<br><strong>Diversity:</strong> ${Math.round(game.scores.diversity)}<br><strong>Adaptation:</strong> ${Math.round(game.scores.adapt)}</div></div>
+ <p>You built connections to <strong>${[...game.connected].filter(x=>x!==game.home).join(", ")}</strong>. Even though the goal in 1.12 was trade, those routes have already created contact with other belief communities.</p>`;
+}
+function continueBeliefs(){game.round=4;$('checkpoint').classList.add("hidden");$('playControls').classList.remove("hidden");render();save()}
+function buildFinal(){
+ $('finalSummary').classList.remove("hidden");$('playControls').classList.add("hidden");
+ const s=game.scores;
+
+ $('finalScores').innerHTML=`<div class="three">
+  <div class="callout"><span class="small">WEALTH CREATED</span><div class="bigScore">${Math.round(s.wealth)}</div></div>
+  <div class="callout"><span class="small">BELIEF REACH</span><div class="bigScore">${Math.round(s.belief)}</div></div>
+  <div class="callout"><span class="small">CULTURAL ADAPTATION</span><div class="bigScore">${Math.round(s.adapt)}</div></div>
+ </div>
+ <p><strong>Starting belief:</strong> ${game.startBelief} &nbsp;•&nbsp; <strong>Regions connected:</strong> ${[...game.connected].join(", ")}</p>`;
+
+ const tradeRounds=game.history.slice(0,3);
+ const bestTrade=tradeRounds.reduce((best,h)=>{
+   const gain=(h.after.wealth-h.before.wealth)+(h.after.reach-h.before.reach);
+   const bestGain=best?((best.after.wealth-best.before.wealth)+(best.after.reach-best.before.reach)):-999;
+   return gain>bestGain?h:best;
+ },null);
+
+ const otherBeliefs=[...game.contactBeliefs].filter(b=>b!==game.startBelief);
+ const evidenceTitles=game.evidence.map(id=>{
+   const c=evidenceCards.find(x=>x.id===id);
+   return c?c.title:null;
+ }).filter(Boolean);
+ const contactRegions=[...game.connected].filter(x=>x!==game.home);
+ const institutionList=[...game.institutions];
+
+ const step1=bestTrade
+   ? `Trading <strong>${bestTrade.good}</strong> from ${bestTrade.source} toward ${bestTrade.dest} created a strong economic opportunity. Wealth rose from <strong>${Math.round(bestTrade.before.wealth)}</strong> to <strong>${Math.round(bestTrade.after.wealth)}</strong>, while trade reach increased too.`
+   : `Trade created new economic opportunities across the network.`;
+
+ const step2=`Those opportunities encouraged more connection. Your network linked <strong>${game.home}</strong> with <strong>${contactRegions.join(", ")||"other regions"}</strong>. Merchants, travelers, migrants, monks, missionaries, scholars, and <strong>diaspora communities</strong> could move along the same routes as goods. <span class="small">Diaspora = a community living away from an ancestral homeland while keeping a shared identity.</span>`;
+
+ const step3=otherBeliefs.length
+   ? `Your starting tradition, <strong>${game.startBelief}</strong>, came into contact with <strong>${otherBeliefs.join(", ")}</strong>. Religious diversity increased because economic routes also became pathways for beliefs and communities.`
+   : `Your starting tradition, <strong>${game.startBelief}</strong>, moved through a wider network. Repeated contact still created opportunities for cultural exchange.`;
+
+ const step4=evidenceTitles.length
+   ? `Cultural adaptation reached <strong>${level(s.adapt)}</strong>. Evidence such as <strong>${evidenceTitles.slice(0,2).join(" and ")}</strong> shows that beliefs could take on local forms instead of simply replacing earlier culture.${institutionList.length?` Your society also developed ${institutionList.join(", ")}.`:""}`
+   : `Cultural adaptation reached <strong>${level(s.adapt)}</strong>. The simulation shows that beliefs can spread, coexist, and be reinterpreted when they enter new cultural settings.${institutionList.length?` Your society also developed ${institutionList.join(", ")}.`:""}`;
+
+ $('causeChainTable').innerHTML=`
+  <tr><td><strong>1. Economic Opportunity</strong></td><td>${step1}</td><td>Valuable goods and profit give people a reason to take the risks of long-distance trade.</td></tr>
+  <tr><td><strong>2. Contact</strong></td><td>${step2}</td><td>Trade routes move people as well as products. More movement creates more chances for beliefs and cultures to meet.</td></tr>
+  <tr><td><strong>3. Cultural Interaction</strong></td><td>${step3}</td><td>Religions do not travel by themselves. People carry beliefs into societies that already have their own values and traditions.</td></tr>
+  <tr><td><strong>4. Cultural Change</strong></td><td>${step4}</td><td><strong>Diffusion</strong> = ideas spread. <strong>Adaptation</strong> = people reinterpret an incoming idea. <strong>Transculturation</strong> = long-term interaction helps create new cultural forms.</td></tr>`;
+
+ $('evidenceList').innerHTML=game.evidence.map(id=>{
+   const c=evidenceCards.find(x=>x.id===id);
+   if(!c)return "";
+   return `<div class="callout"><strong>${c.title}</strong><br>${c.body}<div class="small" style="margin-top:6px"><strong>Use it to explain:</strong> ${c.q}</div></div>`;
+ }).join("")||"<p>No special evidence card was unlocked. Use your trade routes and belief contacts as evidence that economic connections created opportunities for cultural interaction.</p>";
+
+ save();
+}
+function exportText(){
+ const tradeRounds=game.history.slice(0,3);
+ const bestTrade=tradeRounds.reduce((best,h)=>{
+   const gain=(h.after.wealth-h.before.wealth)+(h.after.reach-h.before.reach);
+   const bestGain=best?((best.after.wealth-best.before.wealth)+(best.after.reach-best.before.reach)):-999;
+   return gain>bestGain?h:best;
+ },null);
+ const otherBeliefs=[...game.contactBeliefs].filter(b=>b!==game.startBelief);
+ const contacts=[...game.connected].filter(x=>x!==game.home);
+
+ let t="TRADE, BELIEF & CONNECTION LAB — ESSAY ORGANIZER\n\n";
+ t+="QUESTION: How can economic connections lead to religious and cultural change?\n\n";
+
+ t+="1. ECONOMIC OPPORTUNITY\n";
+ if(bestTrade)t+=`Trading ${bestTrade.good} from ${bestTrade.source} toward ${bestTrade.dest} helped wealth rise from ${Math.round(bestTrade.before.wealth)} to ${Math.round(bestTrade.after.wealth)}.\n`;
+ else t+="Trade created new economic opportunities.\n";
+ t+="Why it matters: Profit gives people a reason to build and use long-distance connections.\n\n";
+
+ t+="2. CONTACT\n";
+ t+=`My network connected ${game.home} with ${contacts.join(", ")||"other regions"}.\n`;
+ t+="Merchants, travelers, migrants, monks, missionaries, scholars, and diaspora communities could move along the same routes as goods.\n";
+ t+="Diaspora = a community living away from an ancestral homeland while keeping a shared identity.\n\n";
+
+ t+="3. CULTURAL INTERACTION\n";
+ t+=`My starting belief was ${game.startBelief}. Other traditions encountered: ${otherBeliefs.join(", ")||"none recorded"}.\n`;
+ t+="Why it matters: religions enter places that already have their own beliefs, values, languages, and traditions.\n\n";
+
+ t+="4. CULTURAL CHANGE\n";
+ t+=`Cultural adaptation ended at ${Math.round(game.scores.adapt)} (${level(game.scores.adapt)}).\n`;
+ t+="Diffusion = ideas spread.\nAdaptation = people reinterpret an incoming idea.\nTransculturation = long-term interaction helps create new cultural forms.\n\n";
+
+ t+="HISTORICAL EVIDENCE\n";
+ if(game.evidence.length){
+   game.evidence.forEach(id=>{const c=evidenceCards.find(x=>x.id===id);if(c)t+=`- ${c.title}: ${c.body}\n`;});
+ } else {
+   t+="- Use the trade network itself as evidence that economic routes created cultural contact.\n";
+ }
+
+ t+="\nSENTENCE FRAME\n";
+ t+="Trade created economic opportunity because __________. This increased connection between __________ and __________. As merchants, travelers, migrants, and religious communities moved, __________ interacted with __________. This led to __________, showing that economic connection can cause cultural change.\n";
+
+ const blob=new Blob([t],{type:"text/plain"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="trade-culture-essay-organizer.txt";a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
+}
+function save(){try{localStorage.setItem("tradeBeliefLab",JSON.stringify({...game,connected:[...game.connected],contactBeliefs:[...game.contactBeliefs],institutions:[...game.institutions]}))}catch(e){}}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+$('startBtn').onclick=start;$('runBtn').onclick=runRound;$('nextBtn').onclick=nextRound;$('closeEvidence').onclick=closeEvidence;$('continueBeliefs').onclick=continueBeliefs;
+$('checkpointPrint').onclick=()=>window.print();$('printBtn').onclick=()=>window.print();$('exportBtn').onclick=exportText;$('restartBtn').onclick=()=>{localStorage.removeItem("tradeBeliefLab");location.reload()};
+initBeliefs();
+})();
+</script>
+</body>
+</html>
